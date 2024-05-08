@@ -1,54 +1,51 @@
-import React from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useEffect } from "react";
-import "../App.css";
+import React, { useState, useEffect } from "react";
 
 const Form = ({ input, setInput, todos, setTodos, editTodo, setEditTodo }) => {
-  const updateTodo = (title, id, completed) => {
-    const updatedTodos = todos.map(todo =>
-      todo.id === id ? { ...todo, title, completed } : todo
-    );
-    setTodos(updatedTodos);
-    setEditTodo("");
-  };
-  useEffect(()=> {
-    if(editTodo){
-        setInput(editTodo.title);
-    }else{
+    const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        if (editTodo) {
+            setInput(editTodo.title);
+            setIsEditing(true);
+        } else {
+            setInput("");
+            setIsEditing(false);
+        }
+    }, [editTodo, setInput]);
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (isEditing) {
+            const updatedTodos = todos.map((todo) =>
+                todo.id === editTodo.id ? { ...todo, title: input } : todo
+            );
+            setTodos(updatedTodos);
+            setEditTodo(null);
+        } else {
+            setTodos([...todos, { id: Date.now(), title: input, completed: false }]);
+        }
         setInput("");
-    }
-  },[ setInput, editTodo]);
+    };
 
+    const onInputChange = (event) => {
+        setInput(event.target.value);
+    };
 
-  const onInputChange = event => {
-    setInput(event.target.value);
-  };
-
-  const onFormSubmit = event => {
-    event.preventDefault();
-    if (!editTodo) {
-      setTodos([...todos, { id: uuidv4(), title: input, completed: false }]);
-      setInput("");
-    } else {
-      updateTodo(input, editTodo.id, editTodo.completed);
-    }
-  };
-
-  return (
-    <form onSubmit={onFormSubmit}>
-      <input
-        type="text"
-        placeholder="Enter a Todo...."
-        className="task-input"
-        value={input}
-        required
-        onChange={onInputChange}
-      />
-      <button className="button-add" type="submit">
-        {editTodo ? "OK" : "Add"}
-      </button>
-    </form>
-  );
+    return (
+        <form onSubmit={handleSubmit}>
+            <input
+                type="text"
+                placeholder="Enter a Todo...."
+                className="task-input"
+                value={input}
+                required
+                onChange={onInputChange}
+            />
+            <button className="button-add" type="submit">
+                {isEditing ? "OK" : "Add"}
+            </button>
+        </form>
+    );
 };
 
 export default Form;
